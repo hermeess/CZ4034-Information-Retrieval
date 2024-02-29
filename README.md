@@ -65,3 +65,24 @@ The various files that were produced are as follows
         negative    4462
         neutral     3014
         ```
+
+## Indexing
+### Setup Elasticsearch
+
+To setup Elasticsearch service, you can follow these steps:
+
+1. Install Elasticsearch with Docker by following the [official documentation](https://www.elastic.co/guide/en/elasticsearch/reference/8.12/docker.html#_start_a_single_node_cluster).
+
+2. Initialize Elasticsearch by running the necessary commands.
+
+### Run the Application with Flask
+
+To run the application using Flask, follow these steps:
+
+1. Ensure that you have all the necessary dependencies installed.
+
+2. Open a terminal or command prompt and navigate to the `indexing` directory.
+
+3. Run the commend `flask reindex` to load or update the data in Elasticsearch.
+
+4. Run the command `flask run` to start the application.
