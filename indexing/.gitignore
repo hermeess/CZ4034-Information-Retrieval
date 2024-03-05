@@ -1,0 +1,4 @@
+.env
+http_ca.crt
+__pycache__/
+.flaskenv
