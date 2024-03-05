@@ -60,13 +60,25 @@ The various files that were produced are as follows
 
 1.  `reddit_post_with_comments_only.csv.csv` contains reddits posts from subreddits <b>1-10</b> alongside the indivdual comments. The sentiments in this section is obtain from the individual comments itself.
     The breakdown of the sentiments in this file is as follows:
-        ```py
+
+    ```py
         positive    9679
         negative    4462
         neutral     3014
-        ```
+    ```
+
+1.  `reddit_post_with_separated_comments_with_datetime.csv` contains reddit posts from subreddits <b>1-10</b> alongside the post's title, body, individual comments, dateTime and url of posts and comments.
+    The sentiments in this section is obtained from combining the post's title, body and individual comments from the post.
+    The breakdown of the sentiments in this file is as follows:
+
+    ```py
+     positive    10053
+    negative     6624
+    neutral       268
+    ```
 
 ## Indexing
+
 ### Setup Elasticsearch
 
 To setup Elasticsearch service, you can follow these steps:
