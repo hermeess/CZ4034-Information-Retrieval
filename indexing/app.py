@@ -97,28 +97,57 @@ def extract_filters(query):
 
     # Filter by subreddit
     subreddit_filter_regex = r'subreddit:([^\s]+)\s*'
-    m = re.search(subreddit_filter_regex, query)
-    if m:
+
+    matches = re.findall(subreddit_filter_regex, query)
+
+    for subreddit_name in matches:
         filters.append({
             'term': {
                 'subreddit.keyword': {
-                    'value': m.group(1)
+                    'value': subreddit_name
                 }
             }
         })
-        query = re.sub(subreddit_filter_regex, '', query).strip()
+
+    query = re.sub(subreddit_filter_regex, '', query).strip()
+
+
+    # m = re.search(subreddit_filter_regex, query)
+    # if m:
+    #     filters.append({
+    #         'term': {
+    #             'subreddit.keyword': {
+    #                 'value': m.group(1)
+    #             }
+    #         }
+    #     })
+    #     query = re.sub(subreddit_filter_regex, '', query).strip()
 
     # Filter by sentiment
     sentiment_filter_regex = r'sentiment:([^\s]+)\s*'
-    m = re.search(sentiment_filter_regex, query)
-    if m:
+
+    matches = re.findall(sentiment_filter_regex, query)
+
+    for sentiments in matches:
         filters.append({
             'term': {
                 'sentiment.keyword': {
-                    'value': m.group(1)
+                    'value': sentiments
                 }
             }
         })
-        query = re.sub(sentiment_filter_regex, '', query).strip()
+        
+    query = re.sub(sentiment_filter_regex, '', query).strip()
+
+    # m = re.search(sentiment_filter_regex, query)
+    # if m:
+    #     filters.append({
+    #         'term': {
+    #             'sentiment.keyword': {
+    #                 'value': m.group(1)
+    #             }
+    #         }
+    #     })
+    #     query = re.sub(sentiment_filter_regex, '', query).strip()
 
     return {'filter': filters}, query
