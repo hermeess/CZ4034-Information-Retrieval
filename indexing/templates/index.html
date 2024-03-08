@@ -98,10 +98,21 @@
                             <div class="col-sm-auto">
                                 <small>Date Created: {{ result._source.comment_date }}</small>
                             </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                {% if result._source.sentiment == "positive" %}
+                                    <span class="badge text-bg-success">
+                                {% elif result._source.sentiment == "negative" %}
+                                    <span class="badge text-bg-danger">
+                                {% else %}
+                                    <span class="badge text-bg-secondary">
+                                {% endif %}
+                                Sentiment: {{ result._source.sentiment }}
+                                </span>
+                            </div>
                             <div class="col-sm-auto">
                                 <small>
-                                    Sentiment: {{ result._source.sentiment }}
-                                    <!-- Last updated: {{ result._source.updated_at | default(result._source.created_on) }}. -->
                                     {% if result._score %}<i>(Score: {{ result._score }})</i>{% endif %}
                                 </small>
                             </div>
