@@ -33,6 +33,21 @@ def handle_search():
                 'match_all': {}
             }
         }
+    
+    default_start_date = "2023-01-01"
+    default_end_date = "2023-12-01"
+    date_from = request.form.get('date_from', default_start_date)
+    date_to = request.form.get('date_to', default_end_date)
+
+    # Define date range aggregation with custom date range
+    date_range_agg = {
+        'date_range': {
+            'field': 'post_date',
+            'ranges': [
+                {'from': date_from, 'to': date_to, 'key': 'custom_date_range'}
+            ]
+        }
+    }
 
     results = es.search(
         query={
@@ -51,7 +66,8 @@ def handle_search():
                 'terms': {
                     'field': 'sentiment.keyword',
                 }
-            }
+            },
+            'date-range-agg': date_range_agg
         },
         size=5, 
         from_=from_
@@ -65,13 +81,17 @@ def handle_search():
         'Sentiment': {
             bucket['key']: bucket['doc_count']
             for bucket in results['aggregations']['sentiment-agg']['buckets']
+        },
+        'CustomDateRange': {
+            bucket['key']: bucket['doc_count']
+            for bucket in results['aggregations']['date-range-agg']['buckets']
         }
     }
 
     return render_template('index.html', results=results['hits']['hits'],
                            query=query, from_=from_,
                            total=results['hits']['total']['value'],
-                           aggs = aggs)
+                           aggs=aggs)
 
 
 
@@ -111,43 +131,38 @@ def extract_filters(query):
 
     query = re.sub(subreddit_filter_regex, '', query).strip()
 
-
-    # m = re.search(subreddit_filter_regex, query)
-    # if m:
-    #     filters.append({
-    #         'term': {
-    #             'subreddit.keyword': {
-    #                 'value': m.group(1)
-    #             }
-    #         }
-    #     })
-    #     query = re.sub(subreddit_filter_regex, '', query).strip()
-
     # Filter by sentiment
     sentiment_filter_regex = r'sentiment:([^\s]+)\s*'
 
     matches = re.findall(sentiment_filter_regex, query)
 
-    for sentiments in matches:
+    for sentiment in matches:
         filters.append({
             'term': {
                 'sentiment.keyword': {
-                    'value': sentiments
+                    'value': sentiment
                 }
             }
         })
-        
+
     query = re.sub(sentiment_filter_regex, '', query).strip()
 
-    # m = re.search(sentiment_filter_regex, query)
-    # if m:
-    #     filters.append({
-    #         'term': {
-    #             'sentiment.keyword': {
-    #                 'value': m.group(1)
-    #             }
-    #         }
-    #     })
-    #     query = re.sub(sentiment_filter_regex, '', query).strip()
+    # Filter by date range
+    date_range_regex = r'customdaterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
+
+    matches = re.findall(date_range_regex, query)
+
+    for date_range in matches:
+        date_from, date_to = date_range
+        filters.append({
+            'range': {
+                'post_date': {
+                    'gte': date_from,
+                    'lte': date_to
+                }
+            }
+        })
+
+    query = re.sub(date_range_regex, '', query).strip()
 
     return {'filter': filters}, query
