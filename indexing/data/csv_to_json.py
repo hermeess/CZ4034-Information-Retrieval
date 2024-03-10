@@ -22,7 +22,20 @@ folder_path = 'data'
     
 print('Done!')
 
+def edit_post_date(json_file):
+    with open(json_file, 'r') as file:
+        data = json.load(file)
+
+    for entry in data:
+        datetime_str = entry["post_date"]
+        time_str = datetime_str.split()[0]  
+        entry["post_date"] = time_str
+
+    with open(json_file, 'w') as file:
+        json.dump(data, file, indent=4)
+
 if __name__ == "__main__":
     csv_file = "/Users/dion/Github/Y4_Projects/Sem 2/Information Retrieval/CZ4034-Information-Retrieval/crawling/reddit_post_with_separated_comments_with_datetime.csv"
     json_file = "/Users/dion/Github/Y4_Projects/Sem 2/Information Retrieval/CZ4034-Information-Retrieval/indexing/data/reddit_post_with_separated_comments_with_datetime.json"
     convert_csv_to_json(csv_file, json_file)
+    edit_post_date(json_file)
