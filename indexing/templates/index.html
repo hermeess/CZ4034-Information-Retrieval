@@ -14,12 +14,16 @@
                     {% if agg == 'CustomDateRange' %}
                     <!-- Insert date picker here -->
                     <form method="POST" id="test">
-                        <input type="date" id="from_date">
-                        <div>to</div>
+                        <div>From:</div>
+                        <input type="date" id="from_date" style="width: m;">
+                        <br>
+                        
+                        <div>To:</div>
                         <input type="date" id="to_date">
                         <input type="hidden" id="datequery" name="query">
+
                         <br>
-                        <button type='submit' id="submitButton" disabled="true" class="btn btn-sm">Filter by date</button>
+                        <button type='submit' id="submitButton" disabled="true" class="btn">Filter by date</button>
                     </form>
                     <!-- Script for date picker -->
                     <script>
