@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-
 {% block content %}
     <form method="POST" action="{{ url_for('handle_search') }}">
       <div class="mb-3">
@@ -12,51 +11,173 @@
                 <p><a href="javascript:history.back(1)">← Back</a></p>
                 {% for agg in aggs %}
                     <h6 class="mt-3">{{ agg }}</h6>
-                    {% for key, count in aggs[agg].items() %}
-                        <form method="POST">
-                            <input type="hidden" name="query" value="{{ agg|lower }}:{{key}} {{ query }}">
-                            <button type="submit" class="btn btn-link btn-sm"{% if aggs[agg]|length == 1 %} disabled{% endif %}>{{ key }} ({{ count }})</button>
-                        </form>
-                    {% endfor %}
+                        {% for key, count in aggs[agg].items() %}
+                            <form method="POST">
+                                <input type="hidden" name="query" value="{{ agg|lower }}:{{key}} {{ query }}">
+                                <button type="submit" class="btn btn-link btn-sm"{% if aggs[agg]|length == 1 %} disabled{% endif %}>{{ key }} ({{ count }})</button>
+                            </form>
+                        {% endfor %}
+                    <canvas id={{agg}}PieChart width="200" height="200"></canvas>
+                    <!-- Script for piecharts -->
+                    <script>
+                        var agg = "{{agg}}"
+                        var dataDict = "{{aggs}}"
+
+                        dataDict = JSON.parse(dataDict.replace(/&#(\d+);/g, function(match, dec) {
+                            return String.fromCharCode(dec);
+                        }).replace(/'/g, '"'));
+
+                        var labels = [];
+                        var values = [];
+
+                        for (var key in dataDict[agg]) {
+                            labels.push(key)
+                            values.push(dataDict[agg][key])
+                        }
+
+                        drawPieChart(labels, values, agg + "PieChart")
+
+                        function drawPieChart(labels, values, elementID) {
+                            var ctx = document.getElementById(elementID).getContext('2d');
+                            var myChart = new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        data: values,
+                                        backgroundColor: [
+                                            'rgba(255, 99, 132, 0.2)',
+                                            'rgba(54, 162, 235, 0.2)',
+                                            'rgba(255, 206, 86, 0.2)',
+                                            'rgba(75, 192, 192, 0.2)',
+                                            'rgba(153, 102, 255, 0.2)',
+                                            'rgba(255, 159, 64, 0.2)'
+                                        ],
+                                        borderColor: [
+                                            'rgba(255, 99, 132, 1)',
+                                            'rgba(54, 162, 235, 1)',
+                                            'rgba(255, 206, 86, 1)',
+                                            'rgba(75, 192, 192, 1)',
+                                            'rgba(153, 102, 255, 1)',
+                                            'rgba(255, 159, 64, 1)'
+                                        ],
+                                        borderWidth: 0
+                                    }]
+                                },
+                                options: {
+                                    plugins: {
+                                        legend: {
+                                            display: false,
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    </script>
                 {% endfor %}
+                <!-- Insert date picker here -->
+                <h6 class="mt-3">Date Range</h6>
+                <form method="POST" id="test">
+                    <div>From:</div>
+                    <input type="date" id="from_date" style="width: m;">
+                    <br>
+                    
+                    <div>To:</div>
+                    <input type="date" id="to_date">
+                    <input type="hidden" id="datequery" name="query">
+
+                    <br>
+                    <button type='submit' id="submitButton" disabled="true" class="btn">Filter by date</button>
+                </form>
+                <!-- Script for date picker -->
+                <script>
+                    const fromDateInput = document.getElementById('from_date');
+                    const toDateInput = document.getElementById('to_date');
+                    const submitButton = document.getElementById('submitButton');
+                    const queryBar = document.getElementsByName('query')[0]
+                    const hiddenQuery = document.getElementById('datequery')
+                    const dateForm = document.getElementById('test')
+                
+                    fromDateInput.addEventListener('input', toggleButtonState);
+                    toDateInput.addEventListener('input', toggleButtonState);
+                    submitButton.addEventListener('click', function(event) {
+                        const fromDate = fromDateInput.value;
+                        const toDate = toDateInput.value;
+                        queryBar.value = `customdaterange:${fromDate} ${toDate}`;
+                        hiddenQuery.value = `customdaterange:${fromDate} ${toDate}`;
+                    });
+                
+                    function toggleButtonState() {
+                        if (!fromDateInput.value || !toDateInput.value || new Date(fromDateInput.value) > new Date(toDateInput.value)) {
+                            submitButton.disabled = true;
+                        } else {
+                            submitButton.disabled = false;
+                        }
+                    }
+                </script>
+                
             </div>
+            
             <div class="col-10">
                 <div class="row mb-3">
                     <div class="col-sm-auto my-auto">
                         Showing results {{ from_ + 1 }}-{{ from_ + results|length }} out of {{ total }}.
                     </div>
-                    {% if from_ > 0 %}
-                        <div class="col-sm-auto my-auto">
-                            <a href="javascript:history.back(1)" class="btn btn-primary">← Previous page</a>
-                        </div>
-                    {% endif %}
-                    {% if from_ + results|length < total %}
-                        <div class="col-sm-auto my-auto">
-                            <form method="POST">
-                                <input type="hidden" name="query" value="{{ query }}">
-                                <input type="hidden" name="from_" value="{{ from_ + results|length }}">
-                                <button type="submit" class="btn btn-primary">Next page →</button>
-                            </form>
-                        </div>
-                    {% endif %}
                     <div class="col"></div>
                 </div>
                 {% for result in results %}
                     <p>
                         {{ from_ + loop.index }}. <b><a href="{{ url_for('get_document', id=result._id) }}">{{ result._source.post_title }}</a></b>
-                        <br>
-                        Subreddit: {{ result._source.subreddit }}.
+                        
                         <br>
                         {{ result._source.post_comment }}
                         <br>
-                        <small>
-                            Sentiment: {{ result._source.sentiment }}.
-                            <!-- Last updated: {{ result._source.updated_at | default(result._source.created_on) }}. -->
-                            {% if result._score %}<i>(Score: {{ result._score }})</i>{% endif %}
-                        </small>
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                <small>Subreddit: {{ result._source.subreddit }}</small>
+                            </div>
+                            <div class="col-sm-auto">
+                                <small>Date Created: {{ result._source.post_date }}, {{ result._source.post_time }}</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-auto">
+                                {% if result._source.sentiment == "positive" %}
+                                    <span class="badge text-bg-success">
+                                {% elif result._source.sentiment == "negative" %}
+                                    <span class="badge text-bg-danger">
+                                {% else %}
+                                    <span class="badge text-bg-secondary">
+                                {% endif %}
+                                Sentiment: {{ result._source.sentiment }}
+                                </span>
+                            </div>
+                            <div class="col-sm-auto">
+                                <small>
+                                    {% if result._score %}<i>(Score: {{ result._score }})</i>{% endif %}
+                                </small>
+                            </div>
+                        </div>
                     </p>
                 {% endfor %}
-            </div>
+                <div class="row mb-3 justify-content-center">
+                {% if from_ > 0 %}
+                    <div class="col-sm-auto my-auto">
+                        <a href="javascript:history.back(1)" class="btn btn-primary">←</a>
+                    </div>
+                {% endif %}
+                <div class="col-sm-auto my-auto">{{(from_ // results|length) + 1}}</div>
+                {% if from_ + results|length < total %}
+                    <div class="col-sm-auto my-auto">
+                        <form method="POST">
+                            <input type="hidden" name="query" value="{{ query }}">
+                            <input type="hidden" name="from_" value="{{ from_ + results|length }}">
+                            <button type="submit" class="btn btn-primary">→</button>
+                        </form>
+                    </div>
+                {% endif %}
+                </div>
+            </div>            
         </div>
     {% elif request.method == 'POST' %}
         <p>No results found.</p>
