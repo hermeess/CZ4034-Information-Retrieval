@@ -1,0 +1,4 @@
+indexing/__pycache__/
+indexing/.env
+indexing/http_ca.crt
+indexing/.flaskenv
