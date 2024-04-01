@@ -1,7 +1,7 @@
 import re
 from flask import Flask, render_template, request
 from search import Search
-
+from datetime import datetime
 
 app = Flask(__name__)
 es = Search()
@@ -16,7 +16,7 @@ def index():
 def handle_search():
     query = request.form.get('query', '')
     from_ = request.form.get('from_', type=int, default=0)
-    filters, parsed_query = extract_filters(query)
+    filters, parsed_query, date_from, date_to = extract_filters(query)
 
     if parsed_query:
         search_query = {
@@ -34,20 +34,29 @@ def handle_search():
             }
         }
     
-    default_start_date = "2023-01-01"
-    default_end_date = "2023-12-01"
-    date_from = request.form.get('date_from', default_start_date)
-    date_to = request.form.get('date_to', default_end_date)
+    default_start_date = "1999-01-01"
+    default_end_date = "2025-12-31"
+
+    # If date_from and date_to are None, use default values
+    if date_from is None:
+        date_from = default_start_date
+    if date_to is None:
+        date_to = default_end_date
+
+    # Convert default dates to ISO format
+    date_from_iso = datetime.strptime(date_from, "%Y-%m-%d").isoformat()
+    date_to_iso = datetime.strptime(date_to, "%Y-%m-%d").isoformat()
+
 
     # Define date range aggregation with custom date range
-    date_range_agg = {
-        'date_range': {
-            'field': 'post_date',
-            'ranges': [
-                {'from': date_from, 'to': date_to, 'key': 'custom_date_range'}
-            ]
+    date_range_filter = {
+    'range': {
+        'post_date': {
+            'gte': date_from_iso,
+            'lte': date_to_iso
         }
     }
+}
 
     results = es.search(
         query={
@@ -67,10 +76,11 @@ def handle_search():
                     'field': 'sentiment.keyword',
                 }
             },
-            'date-range-agg': date_range_agg
+            # 'date-range-agg': date_range_filter
         },
         size=5, 
-        from_=from_
+        from_=from_,
+        post_filter=date_range_filter
     )
     
     aggs = {
@@ -82,10 +92,6 @@ def handle_search():
             bucket['key']: bucket['doc_count']
             for bucket in results['aggregations']['sentiment-agg']['buckets']
         },
-        'CustomDateRange': {
-            bucket['key']: bucket['doc_count']
-            for bucket in results['aggregations']['date-range-agg']['buckets']
-        }
     }
 
     return render_template('index.html', results=results['hits']['hits'],
@@ -149,20 +155,13 @@ def extract_filters(query):
 
     # Filter by date range
     date_range_regex = r'customdaterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
+    matches = re.search(date_range_regex, query)
 
-    matches = re.findall(date_range_regex, query)
+    if matches:
+        date_from = matches.group(1)
+        date_to = matches.group(2)
+    else:
+        date_from = None
+        date_to = None
 
-    for date_range in matches:
-        date_from, date_to = date_range
-        filters.append({
-            'range': {
-                'post_date': {
-                    'gte': date_from,
-                    'lte': date_to
-                }
-            }
-        })
-
-    query = re.sub(date_range_regex, '', query).strip()
-
-    return {'filter': filters}, query
+    return {'filter': filters}, query, date_from, date_to

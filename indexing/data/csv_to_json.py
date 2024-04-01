@@ -28,8 +28,10 @@ def edit_post_date(json_file):
 
     for entry in data:
         datetime_str = entry["post_date"]
-        time_str = datetime_str.split()[0]  
-        entry["post_date"] = time_str
+        date_str = datetime_str.split()[0]  
+        time_str = datetime_str.split()[1]  
+        entry["post_date"] = date_str
+        entry["post_time"] = time_str
 
     with open(json_file, 'w') as file:
         json.dump(data, file, indent=4)
