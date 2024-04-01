@@ -154,7 +154,7 @@ def extract_filters(query):
     query = re.sub(sentiment_filter_regex, '', query).strip()
 
     # Filter by date range
-    date_range_regex = r'customdaterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
+    date_range_regex = r'daterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
     matches = re.search(date_range_regex, query)
 
     if matches:
