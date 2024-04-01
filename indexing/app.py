@@ -106,7 +106,9 @@ def get_document(id):
     document = es.retrieve_document(id)
     title = document['_source']['post_title']
     paragraphs = document['_source']['post_comment'].split('\n')
-    return render_template('document.html', title=title, paragraphs=paragraphs)
+    post_link = document['_source']['post_link']
+    comment_link = document['_source']['comment_link']
+    return render_template('document.html', title=title, paragraphs=paragraphs, post_link=post_link, comment_link=comment_link)
 
 
 
