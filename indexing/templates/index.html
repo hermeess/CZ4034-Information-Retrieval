@@ -12,29 +12,31 @@
         <!-- <p><a href="javascript:history.back(1)">← Back</a></p> -->
 
         <!-- Date Range Pickers -->
-        
+
         <h6>Filter by Date</h6>
         <form method="POST" id="date_range_input">
-            
+
             <div class="form-group mb-1">
                 <div class="align-items-center" style="font-size: small;">
                     <label for="from_date">From:</label>
                     <input type="date" class="form-control" id="from_date" style="font-size: small;">
                 </div>
             </div>
-    
+
             <div class="form-group mb-3">
                 <div class="align-items-center" style="font-size: small;">
                     <label class="mr-sm-2" for="to_date">To:</label>
                     <input type="date" class="form-control" id="to_date" style="font-size: small;">
                 </div>
             </div>
-        
+
 
             <input type="hidden" id="datequery" name="query">
 
-            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="Please select a valid date range!" style="width: 100%;">
-                <button type='submit' id="submitButton" disabled="true" class="btn btn-primary" style="font-size: small; width: 100%;">Set Dates</button>
+            <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="Please select a valid date range!"
+                style="width: 100%;">
+                <button type='submit' id="submitButton" disabled="true" class="btn btn-primary"
+                    style="font-size: small; width: 100%;">Set Dates</button>
             </span>
         </form>
         <!-- Script for date picker -->
@@ -148,10 +150,10 @@
                     result._source.post_title }}</a></b>
 
             <br>
-            <div id="post_comment">
-                {{ result._source.post_comment }}
-            </div>
-            <br>
+        <div id="post_comment">
+            {{ result._source.post_comment }}
+        </div>
+        <br>
         <div class="row">
             <div class="col-sm-auto">
                 <small>Subreddit: {{ result._source.subreddit }}</small>
@@ -180,21 +182,37 @@
         </div>
         </p>
         {% endfor %}
-        <div class="row mb-3 justify-content-center">
-            {% if from_ > 0 %}
-            <div class="col-sm-auto my-auto">
-                <a href="javascript:history.back(1)" class="btn btn-primary">←</a>
-            </div>
-            {% endif %}
-            <div class="col-sm-auto my-auto">{{(from_ // results|length) + 1}}</div>
-            {% if from_ + results|length < total %} <div class="col-sm-auto my-auto">
-                <form method="POST">
-                    <input type="hidden" name="query" value="{{ query }}">
-                    <input type="hidden" name="from_" value="{{ from_ + results|length }}">
-                    <button type="submit" class="btn btn-primary">→</button>
-                </form>
+        <!-- Pagination -->
+        <div class="row justify-content-center">
+            <nav class="mb-3">
+                <ul class="pagination">
+                    {% if from_ > 0 %}
+                    <li class="page-item">
+                        <a href="javascript:history.back(1)" class="page-link">←</a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <a href="javascript:history.back(1)" class="page-link">←</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item">
+                        <a class="page-link" style="background-color: white; color: black;">{{(from_ // results|length) + 1}}</a>
+                    </li>
+                    {% if from_ + results|length < total %} 
+                    <li class="page-item">
+                        <a>
+                            <form method="POST">
+                                <input type="hidden" name="query" value="{{ query }}">
+                                <input type="hidden" name="from_" value="{{ from_ + results|length }}">
+                                <button type="submit" class="page-link">→</button>
+                            </form>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
         </div>
-        {% endif %}
     </div>
 </div>
 </div>
