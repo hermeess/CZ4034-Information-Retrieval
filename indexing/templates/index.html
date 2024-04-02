@@ -182,39 +182,37 @@
         </div>
         </p>
         {% endfor %}
-        <!-- Pagination -->
-        <div class="row justify-content-center">
-            <nav class="mb-3">
-                <ul class="pagination">
-                    {% if from_ > 0 %}
-                    <li class="page-item">
-                        <a href="javascript:history.back(1)" class="page-link">←</a>
-                    </li>
-                    {% else %}
-                    <li class="page-item disabled">
-                        <a href="javascript:history.back(1)" class="page-link">←</a>
-                    </li>
-                    {% endif %}
-                    <li class="page-item">
-                        <a class="page-link" style="background-color: white; color: black;">{{(from_ // results|length) + 1}}</a>
-                    </li>
-                    {% if from_ + results|length < total %} 
-                    <li class="page-item">
-                        <a>
-                            <form method="POST">
-                                <input type="hidden" name="query" value="{{ query }}">
-                                <input type="hidden" name="from_" value="{{ from_ + results|length }}">
-                                <button type="submit" class="page-link">→</button>
-                            </form>
-                        </a>
-                    </li>
-                    {% endif %}
-
-                </ul>
-            </nav>
-        </div>
     </div>
 </div>
+<!-- Pagination -->
+<nav class="d-flex justify-content-center">
+    <ul class="pagination">
+        {% if from_ > 0 %}
+        <li class="page-item">
+            <a href="javascript:history.back(1)" class="page-link">←</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a href="javascript:history.back(1)" class="page-link">←</a>
+        </li>
+        {% endif %}
+        <li class="page-item">
+            <a class="page-link" style="background-color: white; color: black;">{{(from_ // results|length) + 1}}</a>
+        </li>
+        {% if from_ + results|length < total %} 
+        <li class="page-item">
+            <a>
+                <form method="POST">
+                    <input type="hidden" name="query" value="{{ query }}">
+                    <input type="hidden" name="from_" value="{{ from_ + results|length }}">
+                    <button type="submit" class="page-link">→</button>
+                </form>
+            </a>
+        </li>
+        {% endif %}
+
+    </ul>
+</nav>
 </div>
 {% elif request.method == 'POST' %}
 
