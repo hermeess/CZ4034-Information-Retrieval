@@ -8,21 +8,22 @@
 </form>
 {% if results %}
 <div class="row mb-3">
-    <div class="col-2 mt-2">
-        <p><a href="javascript:history.back(1)">← Back</a></p>
+    <div class="col-2">
+        <!-- <p><a href="javascript:history.back(1)">← Back</a></p> -->
 
         <!-- Date Range Pickers -->
-        <h6 class="mt-3">Filter by Date</h6>
+        
+        <h6>Filter by Date</h6>
         <form method="POST" id="date_range_input">
             
-            <div class="form-group" style="margin-bottom: 5px;">
+            <div class="form-group mb-1">
                 <div class="align-items-center" style="font-size: small;">
                     <label for="from_date">From:</label>
                     <input type="date" class="form-control" id="from_date" style="font-size: small;">
                 </div>
             </div>
     
-            <div class="form-group" style="margin-bottom: 15px;">
+            <div class="form-group mb-3">
                 <div class="align-items-center" style="font-size: small;">
                     <label class="mr-sm-2" for="to_date">To:</label>
                     <input type="date" class="form-control" id="to_date" style="font-size: small;">
@@ -50,8 +51,9 @@
             submitButton.addEventListener('click', function (event) {
                 const fromDate = fromDateInput.value;
                 const toDate = toDateInput.value;
-                queryBar.value = `daterange:${fromDate} ${toDate}`;
-                hiddenQuery.value = `daterange:${fromDate} ${toDate}`;
+                var currentQueryBarVal = queryBar.value
+                queryBar.value = `daterange:${fromDate} ${toDate} {{ query }}`;
+                hiddenQuery.value = `daterange:${fromDate} ${toDate} {{ query }}`;
             });
 
             function toggleButtonState() {
@@ -197,6 +199,8 @@
 </div>
 </div>
 {% elif request.method == 'POST' %}
+
 <p>No results found.</p>
+
 {% endif %}
 {% endblock %}
