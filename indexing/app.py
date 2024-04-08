@@ -2,6 +2,7 @@ import re
 from flask import Flask, render_template, request
 from search import Search
 from datetime import datetime
+import time
 
 app = Flask(__name__)
 es = Search()
@@ -34,7 +35,7 @@ def handle_search():
                 'match_all': {}
             }
         }
-
+    start_time = time.time()
     results = es.search(
         query={
             'bool': {
@@ -57,6 +58,7 @@ def handle_search():
         size=size_, 
         from_=from_,
     )
+    end_time = time.time()
     
     aggs = {
         'Subreddit': {
@@ -72,7 +74,7 @@ def handle_search():
     return render_template('index.html', results=results['hits']['hits'],
                            query=query, from_=from_,
                            total=results['hits']['total']['value'],
-                           aggs=aggs, size_=size_)
+                           aggs=aggs, size_=size_, time_ = round((end_time-start_time)*1000, 2))
 
 
 
