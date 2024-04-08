@@ -16,6 +16,7 @@ def index():
 def handle_search():
     query = request.form.get('query', '')
     from_ = request.form.get('from_', type=int, default=0)
+    size_ = 5
     filters, parsed_query = extract_filters(query)
 
     if parsed_query:
@@ -53,7 +54,7 @@ def handle_search():
                 }
             },
         },
-        size=5, 
+        size=size_, 
         from_=from_,
     )
     
@@ -71,7 +72,7 @@ def handle_search():
     return render_template('index.html', results=results['hits']['hits'],
                            query=query, from_=from_,
                            total=results['hits']['total']['value'],
-                           aggs=aggs)
+                           aggs=aggs, size_=size_)
 
 
 
