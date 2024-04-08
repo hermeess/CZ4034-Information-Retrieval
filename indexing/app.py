@@ -16,7 +16,7 @@ def index():
 def handle_search():
     query = request.form.get('query', '')
     from_ = request.form.get('from_', type=int, default=0)
-    filters, parsed_query, date_from, date_to = extract_filters(query)
+    filters, parsed_query = extract_filters(query)
 
     if parsed_query:
         search_query = {
@@ -33,30 +33,6 @@ def handle_search():
                 'match_all': {}
             }
         }
-    
-    default_start_date = "1999-01-01"
-    default_end_date = "2025-12-31"
-
-    # If date_from and date_to are None, use default values
-    if date_from is None:
-        date_from = default_start_date
-    if date_to is None:
-        date_to = default_end_date
-
-    # Convert default dates to ISO format
-    date_from_iso = datetime.strptime(date_from, "%Y-%m-%d").isoformat()
-    date_to_iso = datetime.strptime(date_to, "%Y-%m-%d").isoformat()
-
-
-    # Define date range aggregation with custom date range
-    date_range_filter = {
-    'range': {
-        'post_date': {
-            'gte': date_from_iso,
-            'lte': date_to_iso
-        }
-    }
-}
 
     results = es.search(
         query={
@@ -76,11 +52,9 @@ def handle_search():
                     'field': 'sentiment.keyword',
                 }
             },
-            # 'date-range-agg': date_range_filter
         },
         size=5, 
         from_=from_,
-        post_filter=date_range_filter
     )
     
     aggs = {
@@ -125,9 +99,7 @@ def extract_filters(query):
 
     # Filter by subreddit
     subreddit_filter_regex = r'subreddit:([^\s]+)\s*'
-
     matches = re.findall(subreddit_filter_regex, query)
-
     for subreddit_name in matches:
         filters.append({
             'term': {
@@ -136,14 +108,11 @@ def extract_filters(query):
                 }
             }
         })
-
     query = re.sub(subreddit_filter_regex, '', query).strip()
 
     # Filter by sentiment
     sentiment_filter_regex = r'sentiment:([^\s]+)\s*'
-
     matches = re.findall(sentiment_filter_regex, query)
-
     for sentiment in matches:
         filters.append({
             'term': {
@@ -152,18 +121,22 @@ def extract_filters(query):
                 }
             }
         })
-
     query = re.sub(sentiment_filter_regex, '', query).strip()
 
     # Filter by date range
     date_range_regex = r'daterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
     matches = re.search(date_range_regex, query)
-
     if matches:
         date_from = matches.group(1)
         date_to = matches.group(2)
-    else:
-        date_from = None
-        date_to = None
+        filters.append({
+            'range': {
+                'post_date': {
+                    'gte': datetime.strptime(date_from, "%Y-%m-%d").isoformat(),
+                    'lte': datetime.strptime(date_to, "%Y-%m-%d").isoformat()
+                }
+            }
+        })
+        query = re.sub(date_range_regex, '', query).strip()  # Remove date range part from query
 
-    return {'filter': filters}, query, date_from, date_to
+    return {'filter': filters}, query
