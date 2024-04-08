@@ -196,7 +196,7 @@
         </li>
         {% endif %}
         <li class="page-item">
-            <a class="page-link" style="background-color: white; color: black;">{{(from_ // results|length) + 1}}</a>
+            <a class="page-link" style="background-color: white; color: black;">{{(from_ // size_) + 1}}</a>
         </li>
         {% if from_ + results|length < total %} 
         <li class="page-item">
@@ -207,6 +207,10 @@
                     <button type="submit" class="page-link">→</button>
                 </form>
             </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a href="javascript:history.back(1)" class="page-link">→</a>
         </li>
         {% endif %}
 
