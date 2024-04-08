@@ -17,7 +17,7 @@ def index():
 def handle_search():
     query = request.form.get('query', '')
     from_ = request.form.get('from_', type=int, default=0)
-    size_ = 5
+    size_ = 5 # This is the max number of results shown in a page. This number is also used for calculation of page number for pagination
     filters, parsed_query = extract_filters(query)
 
     if parsed_query:
