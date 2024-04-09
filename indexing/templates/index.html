@@ -67,6 +67,37 @@
         </script>
         {% for agg in aggs %} <!-- This is for both subreddits and sentiments -->
         <h6 class="mt-3" style="width: 100%;">{{ agg }}</h6>
+
+        <!-- Checkbox for sentiment -->
+        {% if agg == "Sentiment" %}
+        <form method="POST">
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="positive" value="on" id="positive" onchange="this.form.submit()"
+            {{ 'checked' if sentiments.get('positive') == 'on' else '' }}>
+            <input type="hidden" name="query" value="{{ query }}">
+            <label class="form-check-label" for="sentiment{{ key }}">
+                positive ({{ aggs[agg].get('positive', 0) }})
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="negative" value="on" id="negative" onchange="this.form.submit()"
+            {{ 'checked' if sentiments.get('negative') == 'on' else '' }}>
+            <input type="hidden" name="query" value="{{ query }}">
+            <label class="form-check-label" for="sentiment{{ key }}">
+                negative ({{ aggs[agg].get('negative', 0) }})
+            </label>
+        </div>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="neutral" value="on" id="neutral" onchange="this.form.submit()"
+            {{ 'checked' if sentiments.get('neutral') == 'on' else '' }}>
+            <input type="hidden" name="query" value="{{ query }}">
+            <label class="form-check-label" for="sentiment{{ key }}">
+                neutral ({{ aggs[agg].get('neutral', 0) }})
+            </label>
+        </div>
+        </form>
+
+        {% else %} <!-- Button for subreddit -->
         {% for key, count in aggs[agg].items() %}
         <form method="POST">
             <input type="hidden" name="query" value="{{ agg|lower }}:{{key}} {{ query }}">
@@ -75,8 +106,9 @@
                 {{ key }} ({{ count }})
             </button>
         </form>
-
-            {% endfor %}
+            
+        {% endfor %}
+        {% endif %}
         <canvas id={{agg}}PieChart width="200" height="200"></canvas>
         <!-- Script for piecharts -->
         <script>

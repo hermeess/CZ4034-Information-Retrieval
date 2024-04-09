@@ -16,9 +16,14 @@ def index():
 @app.post('/')
 def handle_search():
     query = request.form.get('query', '')
+    sentiments = {
+        'positive': request.form.get('positive', ''),
+        'negative': request.form.get('negative', ''),
+        'neutral': request.form.get('neutral', '')
+    }
     from_ = request.form.get('from_', type=int, default=0)
     size_ = 5 # This is the max number of results shown in a page. This number is also used for calculation of page number for pagination
-    filters, parsed_query = extract_filters(query)
+    filters, parsed_query = extract_filters(query, sentiments)
 
     if parsed_query:
         search_query = {
@@ -72,7 +77,7 @@ def handle_search():
     }
 
     return render_template('index.html', results=results['hits']['hits'],
-                           query=query, from_=from_,
+                           query=query, from_=from_, sentiments=sentiments,
                            total=results['hits']['total']['value'],
                            aggs=aggs, size_=size_, time_ = round((end_time-start_time)*1000, 2))
 
@@ -97,7 +102,7 @@ def reindex():
           f'in {response["took"]} milliseconds.')
 
 
-def extract_filters(query):
+def extract_filters(query, sentiments):
     filters = []
 
     # Filter by subreddit
@@ -114,17 +119,17 @@ def extract_filters(query):
     query = re.sub(subreddit_filter_regex, '', query).strip()
 
     # Filter by sentiment
-    sentiment_filter_regex = r'sentiment:([^\s]+)\s*'
-    matches = re.findall(sentiment_filter_regex, query)
-    for sentiment in matches:
+    sentiment_values = []
+    for key, value in sentiments.items():
+        if value == 'on':
+            sentiment_values.append(key)
+
+    if len(sentiment_values) > 0:
         filters.append({
-            'term': {
-                'sentiment.keyword': {
-                    'value': sentiment
-                }
+            'terms': {
+                'sentiment.keyword': sentiment_values
             }
         })
-    query = re.sub(sentiment_filter_regex, '', query).strip()
 
     # Filter by date range
     date_range_regex = r'daterange:(\d{4}-\d{2}-\d{2}) (\d{4}-\d{2}-\d{2})\s*'
