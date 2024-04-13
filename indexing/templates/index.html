@@ -190,6 +190,7 @@
         {% endfor %}
     </div>
 
+    <!-- Display Results -->
     <div class="col-9">
         <div class="row mb-3">
             <div class="col-sm-auto my-auto">
@@ -213,6 +214,24 @@
             </div>
             <div class="col-sm-auto">
                 <small>Date Created: {{ result._source.post_date }}, {{ result._source.post_time }}</small>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-auto">
+                {% if result._source.intent == "0" %}
+                    {% set intent = "Career Advice" %}
+                {% elif result._source.intent == "1" %}
+                    {% set intent = "Support and Encouragement" %}
+                {% elif result._source.intent == "2" %}
+                    {% set intent = "Sexual Identity Discussion" %}
+                {% elif intent == "3" %}
+                    {% set intent = "Anxiety Management Advice" %}
+                {% elif result._source.intent == "4" %}
+                    {% set intent = "Social Interaction Tips" %}
+                {% else %}
+                    {% set intent = "Other" %}
+                {% endif %}
+                <small>Intent: {{ intent }}</small>
             </div>
         </div>
         <div class="row">
