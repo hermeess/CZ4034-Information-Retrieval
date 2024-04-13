@@ -42,7 +42,7 @@ class Search:
                 operations.append(document)
             return self.es.bulk(operations=operations)
     
-    def reindex(self, file_path='data/reddit_post_with_separated_comments_with_datetime.json'):
+    def reindex(self, file_path='data/dataset.json'):
         self.create_index()
         with open(file_path, 'rt') as f:
             documents = json.loads(f.read())

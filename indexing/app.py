@@ -21,9 +21,10 @@ def handle_search():
         'negative': request.form.get('negative', ''),
         'neutral': request.form.get('neutral', '')
     }
+    filter = request.form.get('filter', '')
     from_ = request.form.get('from_', type=int, default=0)
     size_ = 5 # This is the max number of results shown in a page. This number is also used for calculation of page number for pagination
-    filters, parsed_query = extract_filters(query, sentiments)
+    filters, parsed_query = extract_filters(query, sentiments, filter)
 
     if parsed_query:
         search_query = {
@@ -59,6 +60,11 @@ def handle_search():
                     'field': 'sentiment.keyword',
                 }
             },
+            'intent-agg': {
+                'terms': {
+                    'field': 'intent.keyword',
+                }
+            }
         },
         size=size_, 
         from_=from_,
@@ -74,10 +80,14 @@ def handle_search():
             bucket['key']: bucket['doc_count']
             for bucket in results['aggregations']['sentiment-agg']['buckets']
         },
+        'Intent': {
+            bucket['key']: bucket['doc_count']
+            for bucket in results['aggregations']['intent-agg']['buckets']
+        }
     }
 
     return render_template('index.html', results=results['hits']['hits'],
-                           query=query, from_=from_, sentiments=sentiments,
+                           query=query, from_=from_, sentiments=sentiments, filter=filter,
                            total=results['hits']['total']['value'],
                            aggs=aggs, size_=size_, time_ = round((end_time-start_time)*1000, 2))
 
@@ -102,12 +112,12 @@ def reindex():
           f'in {response["took"]} milliseconds.')
 
 
-def extract_filters(query, sentiments):
+def extract_filters(query, sentiments, filter):
     filters = []
 
     # Filter by subreddit
     subreddit_filter_regex = r'subreddit:([^\s]+)\s*'
-    matches = re.findall(subreddit_filter_regex, query)
+    matches = re.findall(subreddit_filter_regex, filter)
     for subreddit_name in matches:
         filters.append({
             'term': {
@@ -116,7 +126,17 @@ def extract_filters(query, sentiments):
                 }
             }
         })
-    query = re.sub(subreddit_filter_regex, '', query).strip()
+
+    intent_filter_regex = r'intent:([^\s]+)\s*'
+    matches = re.findall(intent_filter_regex, filter)
+    for intent_name in matches:
+        filters.append({
+            'term': {
+                'intent.keyword': {
+                    'value': intent_name
+                }
+            }
+        })
 
     # Filter by sentiment
     sentiment_values = []
