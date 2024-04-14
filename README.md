@@ -98,3 +98,20 @@ To run the application using Flask, follow these steps:
 3. Run the commend `flask reindex` to load or update the data in Elasticsearch.
 
 4. Run the command `flask run` to start the application.
+
+Classification (sentiWordNet)
+We have to import some dependencies to run the sentiWordNet classification on the dataset
+ 1. import NLTK
+ 2. from nltk.corpus import sentiwordnet
+ 3. from nltk.stem import WordNetLemmatizer
+
+File path that we use for training is './reddit_post_with_comments_only-2.csv'
+
+Classification (intent based)
+Dependencies to import to run the intent clustering 
+1. from sklearn.feature_extraction.text import TfidfVectorizer
+2. from sklearn.cluster import KMeans
+3. from sklearn.decomposition import PCA
+4. from mpl_toolkits.mplot3d import Axes3D
+
+File path that we use for training is './comments (1).csv'
